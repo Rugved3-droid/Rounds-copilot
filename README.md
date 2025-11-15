@@ -41,7 +41,7 @@ Rounds Copilot addresses the ephemeral nature of bedside teaching by:
 
 1. Clone the repository:
 bash
-git clone https://github.com/[Rugved3-droid]/rounds-copilot.git
+git clone https://github.com/[Rugved3-droid]/rounds_copilot.git
 cd rounds-copilot
 
 
