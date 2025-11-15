@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Enhanced Rounds Learning Assistant - GPT-4</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        .record-btn {
+            background: #e74c3c;
+            color: white;
+            font-size: 18px;
+            padding: 15px 35px;
+        }
+        .record-btn:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+        .record-btn.recording {
+            background: #27ae60;
+            animation: pulse 1.5s infinite;
+        }
+        .enhance-btn {
+            background: #3498db;
+            color: white;
+        }
+        .enhance-btn:hover {
+            background: #2980b9;
+        }
+        .toggle-btn {
+            background: #7f8c8d;
+            color: white;
+            font-size: 14px;
+            padding: 8px 15px;
+        }
+        .toggle-btn:hover {
+            background: #636e72;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .status {
+            text-align: center;
+            margin: 20px;
+            font-size: 16px;
+            color: #555;
+            min-height: 24px;
+        }
+        .timer {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        .results {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 30px;
+            border: 1px solid #dee2e6;
+        }
+        .hidden {
+            display: none;
+        }
+        .section {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            border-left: 4px solid #3498db;
+        }
+        .section h2 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+        .reference {
+            background: #fff3cd;
+            padding: 12px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #ffc107;
+            font-size: 14px;
+        }
+        .mcq {
+            background: #e8f4f8;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border-left: 4px solid #17a2b8;
+        }
+        .mcq-answer {
+            background: #d4edda;
+            padding: 12px;
+            margin-top: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #28a745;
+        }
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: 'Consolas', monospace;
+            line-height: 1.5;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s infinite;
+        }
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+        .powered-by {
+            text-align: center;
+            margin-top: 20px;
+            color: #7f8c8d;
+            font-size: 12px;
+        }
+        .option-btn {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 10px 15px;
+            margin: 8px 0;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .option-btn:hover {
+            background: #e9ecef;
+        }
+        .option-btn.selected {
+            background: #cce5ff;
+            border-color: #b8daff;
+        }
+        .option-btn.correct {
+            background: #d4edda;
+            border-color: #c3e6cb;
+        }
+        .option-btn.incorrect {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        .check-answer-btn {
+            background: #6c757d;
+            color: white;
+            margin-top: 15px;
+        }
+        .explanation-box {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-left: 4px solid #28a745;
+            display: none;
+        }
+        .collapsible-header {
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .collapsible-header:after {
+            content: '▼';
+            font-size: 12px;
+            transition: transform 0.3s;
+        }
+        .collapsible-header.collapsed:after {
+            transform: rotate(-90deg);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏥 Enhanced Rounds Learning Assistant</h1>
+        <div class="subtitle">Evidence-Based Medical Education</div>
+        
+        <div class="status">Click record to capture rounds discussion</div>
+        
+        <div class="controls">
+            <button id="recordBtn" class="btn record-btn">🎤 Start Recording</button>
+            <button id="enhanceBtn" class="btn enhance-btn hidden">📚 Generate More Questions</button>
+        </div>
+        
+        <div id="results" class="results hidden">
+            <div class="section hidden" id="transcriptSection">
+                <div class="collapsible-header collapsed" onclick="toggleTranscript()">
+                    <h2>📝 Transcript</h2>
+                </div>
+                <div class="collapsible-content hidden">
+                    <pre id="transcript"></pre>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>🎯 Key Learning Points:</h2>
+                <div id="summary"></div>
+            </div>
+            
+            <div class="section">
+                <h2>📖 Evidence-Based References:</h2>
+                <div id="references"></div>
+            </div>
+            
+            <div class="section">
+                <h2>📋 USMLE-Style Questions:</h2>
+                <div id="mcqs"></div>
+            </div>
+        </div>
+        
+        <div class="powered-by">
+            Created by Rugved Parmar | September 2025
+        </div>
+    </div>
+
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+        let isRecording = false;
+        let currentTranscript = '';
+        let recordingStartTime;
+        let questionCounter = 0;
+        
+        const API_KEY = 'Your_Open_AI_key'; // PUT YOUR OPENAI API KEY HERE
+        
+        const recordBtn = document.getElementById('recordBtn');
+        const enhanceBtn = document.getElementById('enhanceBtn');
+        const status = document.querySelector('.status');
+        const results = document.getElementById('results');
+        const transcriptDiv = document.getElementById('transcript');
+        const summaryDiv = document.getElementById('summary');
+        const referencesDiv = document.getElementById('references');
+        const mcqsDiv = document.getElementById('mcqs');
+        const transcriptSection = document.getElementById('transcriptSection');
+        
+        recordBtn.addEventListener('click', toggleRecording);
+        enhanceBtn.addEventListener('click', generateMoreQuestions);
+        
+        function toggleTranscript() {
+            const header = document.querySelector('.collapsible-header');
+            const content = document.querySelector('.collapsible-content');
+            
+            header.classList.toggle('collapsed');
+            content.classList.toggle('hidden');
+        }
+        
+        async function toggleRecording() {
+            if (!isRecording) {
+                startRecording();
+            } else {
+                stopRecording();
+            }
+        }
+        
+        async function startRecording() {
+            audioChunks = [];
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                
+                mediaRecorder.ondataavailable = event => {
+                    audioChunks.push(event.data);
+                };
+                
+                mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    await processAudio(audioBlob);
+                };
+                
+                mediaRecorder.start();
+                isRecording = true;
+                recordingStartTime = Date.now();
+                recordBtn.textContent = '⏹️ Stop Recording';
+                recordBtn.classList.add('recording');
+                updateRecordingTimer();
+            } catch (error) {
+                alert('Microphone access denied. Please allow microphone access and refresh.');
+            }
+        }
+        
+        function updateRecordingTimer() {
+            if (isRecording) {
+                const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
+                const minutes = Math.floor(elapsed / 60);
+                const seconds = elapsed % 60;
+                status.innerHTML = `🔴 Recording... <span class="timer">${minutes}:${seconds.toString().padStart(2, '0')}</span> | Speak clearly about the rounds discussion`;
+                setTimeout(updateRecordingTimer, 1000);
+            }
+        }
+        
+        function stopRecording() {
+            mediaRecorder.stop();
+            mediaRecorder.stream.getTracks().forEach(track => track.stop());
+            isRecording = false;
+            recordBtn.textContent = '🎤 Start Recording';
+            recordBtn.classList.remove('recording');
+            status.innerHTML = '<div class="loading">⏳ Processing with GPT-4</div>';
+        }
+        
+        async function processAudio(audioBlob) {
+            try {
+                const audioFile = new File([audioBlob], "recording.webm", { type: "audio/webm" });
+                
+                // Transcribe with Whisper - Enhanced medical context
+                const formData = new FormData();
+                formData.append('file', audioFile);
+                formData.append('model', 'whisper-1');
+                formData.append('prompt', 'Medical rounds discussion. Common drugs: duloxetine, gabapentin, pregabalin, acetaminophen, ibuprofen, lisinopril, metformin, atorvastatin, spironolactone, furosemide, empagliflozin, warfarin, apixaban, metoprolol, carvedilol, amlodipine. Medical terms: hypertension, diabetes, heart failure, stroke, CVA, TIA, neuropathy, edema, post-stroke pain syndrome, central pain, neuropathic pain, GDMT, ejection fraction, HFrEF, HFpEF.');
+                formData.append('language', 'en');
+                
+                status.innerHTML = '<div class="loading">🎯 Transcribing with Whisper</div>';
+                
+                const transcriptResponse = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${API_KEY}`
+                    },
+                    body: formData
+                });
+                
+                const transcriptData = await transcriptResponse.json();
+                currentTranscript = transcriptData.text || "Could not transcribe audio.";
+                
+                transcriptDiv.textContent = currentTranscript;
+                transcriptSection.classList.remove('hidden');
+                
+                // Generate comprehensive learning with GPT-4
+                status.innerHTML = '<div class="loading">🤖 Analyzing with GPT-4</div>';
+                
+                const summaryResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${API_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: 'gpt-4',
+                        messages: [{
+                            role: 'system',
+                            content: 'You are an expert medical educator creating learning materials from rounds discussions. Include specific, evidence-based content with real guideline citations and clinical trial data.'
+                        }, {
+                            role: 'user',
+                            content: `From this rounds discussion, create comprehensive learning material:
+
+Rounds discussion: ${currentTranscript}
+
+Provide:
+
+1. KEY LEARNING POINTS
+- 5 specific, actionable clinical points
+- Include exact drug doses, monitoring parameters
+- Mention contraindications and warnings
+
+2. CLINICAL PEARLS
+- Practical tips that would help a resident
+- Common pitfalls to avoid
+- When to consult specialists
+
+3. DIFFERENTIAL DIAGNOSIS (if applicable)
+- List key differentials with distinguishing features
+
+4. MANAGEMENT SUMMARY
+- Step-by-step approach
+- Include drug dosing and titration schedules
+- Monitoring requirements`
+                        }],
+                        max_tokens: 1500,
+                        temperature: 0.7
+                    })
+                });
+                
+                const summaryData = await summaryResponse.json();
+                summaryDiv.innerHTML = summaryData.choices[0].message.content.replace(/\n/g, '<br>');
+                
+                // Generate evidence-based references
+                await generateReferences();
+                
+                // Generate USMLE questions
+                await generateUSMLEQuestions();
+                
+                results.classList.remove('hidden');
+                enhanceBtn.classList.remove('hidden');
+                status.textContent = '✅ Analysis complete! Review your comprehensive learning summary below';
+                
+            } catch (error) {
+                console.error('Error:', error);
+                status.innerHTML = `❌ Error: ${error.message}. Check your API key and try again.`;
+            }
+        }
+        
+        async function generateReferences() {
+            const referencesResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${API_KEY}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: 'gpt-4',
+                    messages: [{
+                        role: 'system',
+                        content: 'You are a medical librarian providing accurate, verifiable medical references and citations.'
+                    }, {
+                        role: 'user',
+                        content: `Based on this medical case: ${currentTranscript}
+                        
+Provide REAL, current medical references:
+
+1. CLINICAL GUIDELINES
+- Include organization (ACC/AHA, ADA, etc.)
+- Year of publication
+- Key recommendations relevant to this case
+
+2. LANDMARK TRIALS
+- Trial acronyms and full names
+- Journal and year (NEJM, JAMA, Lancet)
+- Key findings with NNT/NNH if applicable
+
+3. DRUG INFORMATION
+- FDA prescribing information highlights
+- Black box warnings if any
+- Starting doses and titration schedules
+
+4. REVIEW ARTICLES
+- Recent reviews from major journals
+- UpToDate or Harrison's chapter references
+
+Format with bullet points and include years.`
+                    }],
+                    max_tokens: 1000,
+                    temperature: 0.3
+                })
+            });
+            
+            const refData = await referencesResponse.json();
+            const references = refData.choices[0].message.content;
+            
+            referencesDiv.innerHTML = references.split('\n').map(ref => {
+                if (ref.trim()) {
+                    return `<div class="reference">${ref}</div>`;
+                }
+                return '';
+            }).join('');
+        }
+        
+        async function generateUSMLEQuestions() {
+            const mcqResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${API_KEY}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: 'gpt-4',
+                    messages: [{
+                        role: 'system',
+                        content: 'You are a USMLE Step 2 CK question writer creating high-quality, clinically relevant questions. Format your response to be easily parsed by JavaScript. Each question should have a clear vignette, exactly 5 options (A-E), one correct answer letter, and a detailed explanation.'
+                    }, {
+                        role: 'user',
+                        content: `Create 2 HIGH-QUALITY USMLE Step 2 CK style questions based on: ${currentTranscript}
+
+Requirements:
+- Clinical vignette format (3-5 sentences)
+- Include relevant vital signs and lab values
+- Test clinical reasoning and next best step
+- NOT simple recall questions
+- 5 answer choices (A-E)
+- Choices should be plausible and similar length
+
+Format each question EXACTLY like this for parsing:
+
+QUESTION_START
+[Full question text]
+A) [Option A]
+B) [Option B]
+C) [Option C]
+D) [Option D]
+E) [Option E]
+CORRECT_ANSWER: [Single letter A-E]
+EXPLANATION_START
+[Detailed explanation]
+EXPLANATION_END
+QUESTION_END`
+                    }],
+                    max_tokens: 1500,
+                    temperature: 0.5
+                })
+            });
+            
+            const mcqData = await mcqResponse.json();
+            const mcqs = mcqData.choices[0].message.content;
+            
+            // Parse the questions
+            const questionRegex = /QUESTION_START([\s\S]*?)CORRECT_ANSWER: ([A-E])([\s\S]*?)EXPLANATION_START([\s\S]*?)EXPLANATION_END([\s\S]*?)QUESTION_END/g;
+            let match;
+            let questionHTML = '';
+            
+            while ((match = questionRegex.exec(mcqs)) !== null) {
+                const questionText = match[1].trim();
+                const correctAnswer = match[2];
+                const explanation = match[4].trim();
+                questionCounter++;
+                
+                const options = [];
+                const optionRegex = /([A-E])\) (.*?)(?=\n[A-E]\)|$)/gs;
+                let optionMatch;
+                
+                while ((optionMatch = optionRegex.exec(questionText)) !== null) {
+                    options.push({
+                        letter: optionMatch[1],
+                        text: optionMatch[2].trim()
+                    });
+                }
+                
+                // Extract the vignette (everything before the first option)
+                let vignette = questionText.split(/[A-E]\)/)[0].trim();
+                
+                questionHTML += `
+                <div class="mcq" id="question-${questionCounter}">
+                    <h3>Question ${questionCounter}</h3>
+                    <div class="question-vignette">${vignette}</div>
+                    <div class="options-container">`;
+                
+                for (const option of options) {
+                    questionHTML += `
+                        <button class="option-btn" data-letter="${option.letter}" data-correct="${option.letter === correctAnswer}">
+                            <strong>${option.letter})</strong> ${option.text}
+                        </button>`;
+                }
+                
+                questionHTML += `
+                    </div>
+                    <div class="explanation-box" id="explanation-${questionCounter}">
+                        <strong>${correctAnswer} is correct.</strong><br><br>
+                        ${explanation}
+                    </div>
+                </div>`;
+            }
+            
+            mcqsDiv.innerHTML = questionHTML;
+            
+            // Add event listeners to all option buttons
+            document.querySelectorAll('.option-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const questionId = this.closest('.mcq').id;
+                    const isCorrect = this.dataset.correct === 'true';
+                    const letter = this.dataset.letter;
+                    
+                    // Remove any previous selections in this question group
+                    document.querySelectorAll(`#${questionId} .option-btn`).forEach(btn => {
+                        btn.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // Highlight the selected option
+                    this.classList.add('selected');
+                    
+                    if (isCorrect) {
+                        this.classList.add('correct');
+                    } else {
+                        this.classList.add('incorrect');
+                        // Also highlight the correct answer
+                        document.querySelector(`#${questionId} .option-btn[data-correct="true"]`).classList.add('correct');
+                    }
+                    
+                    // Show the explanation
+                    const explanationId = questionId.replace('question', 'explanation');
+                    document.getElementById(explanationId).style.display = 'block';
+                });
+            });
+        }
+        
+        async function generateMoreQuestions() {
+            status.innerHTML = '<div class="loading">📚 Generating additional practice questions</div>';
+            enhanceBtn.disabled = true;
+            
+            const additionalMCQs = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${API_KEY}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: 'gpt-4',
+                    messages: [{
+                        role: 'system',
+                        content: 'You are a USMLE Step 2 CK question writer creating high-quality, clinically relevant questions. Format your response to be easily parsed by JavaScript.'
+                    }, {
+                        role: 'user',
+                        content: `Create 2 MORE challenging USMLE Step 2 CK questions based on: ${currentTranscript}
+                        
+These should test DIFFERENT concepts than before. Include management decisions, complications, or diagnostic reasoning.
+
+Format each question EXACTLY like this for parsing:
+
+QUESTION_START
+[Full question text]
+A) [Option A]
+B) [Option B]
+C) [Option C]
+D) [Option D]
+E) [Option E]
+CORRECT_ANSWER: [Single letter A-E]
+EXPLANATION_START
+[Detailed explanation]
+EXPLANATION_END
+QUESTION_END`
+                    }],
+                    max_tokens: 1500,
+                    temperature: 0.5
+                })
+            });
+            
+            const newMCQData = await additionalMCQs.json();
+            const newQuestions = newMCQData.choices[0].message.content;
+            
+            // Parse the questions
+            const questionRegex = /QUESTION_START([\s\S]*?)CORRECT_ANSWER: ([A-E])([\s\S]*?)EXPLANATION_START([\s\S]*?)EXPLANATION_END([\s\S]*?)QUESTION_END/g;
+            let match;
+            let questionHTML = '';
+            
+            while ((match = questionRegex.exec(newQuestions)) !== null) {
+                const questionText = match[1].trim();
+                const correctAnswer = match[2];
+                const explanation = match[4].trim();
+                questionCounter++;
+                
+                const options = [];
+                const optionRegex = /([A-E])\) (.*?)(?=\n[A-E]\)|$)/gs;
+                let optionMatch;
+                
+                while ((optionMatch = optionRegex.exec(questionText)) !== null) {
+                    options.push({
+                        letter: optionMatch[1],
+                        text: optionMatch[2].trim()
+                    });
+                }
+                
+                // Extract the vignette (everything before the first option)
+                let vignette = questionText.split(/[A-E]\)/)[0].trim();
+                
+                questionHTML += `
+                <div class="mcq" id="question-${questionCounter}">
+                    <h3>Additional Question ${questionCounter-2}</h3>
+                    <div class="question-vignette">${vignette}</div>
+                    <div class="options-container">`;
+                
+                for (const option of options) {
+                    questionHTML += `
+                        <button class="option-btn" data-letter="${option.letter}" data-correct="${option.letter === correctAnswer}">
+                            <strong>${option.letter})</strong> ${option.text}
+                        </button>`;
+                }
+                
+                questionHTML += `
+                    </div>
+                    <div class="explanation-box" id="explanation-${questionCounter}">
+                        <strong>${correctAnswer} is correct.</strong><br><br>
+                        ${explanation}
+                    </div>
+                </div>`;
+            }
+            
+            mcqsDiv.innerHTML += questionHTML;
+            
+            // Add event listeners to new option buttons
+            document.querySelectorAll('.option-btn:not([data-initialized])').forEach(button => {
+                button.dataset.initialized = 'true';
+                button.addEventListener('click', function() {
+                    const questionId = this.closest('.mcq').id;
+                    const isCorrect = this.dataset.correct === 'true';
+                    const letter = this.dataset.letter;
+                    
+                    // Remove any previous selections in this question group
+                    document.querySelectorAll(`#${questionId} .option-btn`).forEach(btn => {
+                        btn.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    
+                    // Highlight the selected option
+                    this.classList.add('selected');
+                    
+                    if (isCorrect) {
+                        this.classList.add('correct');
+                    } else {
+                        this.classList.add('incorrect');
+                        // Also highlight the correct answer
+                        document.querySelector(`#${questionId} .option-btn[data-correct="true"]`).classList.add('correct');
+                    }
+                    
+                    // Show the explanation
+                    const explanationId = questionId.replace('question', 'explanation');
+                    document.getElementById(explanationId).style.display = 'block';
+                });
+            });
+            
+            status.textContent = '✅ Additional questions generated!';
+            enhanceBtn.disabled = false;
+        }
+    </script>
+</body>
+</html>
